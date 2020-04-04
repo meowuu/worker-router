@@ -1,0 +1,63 @@
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+define("main", ["require", "exports", "parseurl", "path-to-regexp"], function (require, exports, parseurl_1, path_to_regexp_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    parseurl_1 = __importDefault(parseurl_1);
+    class Router {
+        constructor(headers = {
+            headers: { 'content-type': 'application/json' }
+        }) {
+            this.routes = new Map();
+            this.responseInit = headers;
+        }
+        get(path, handle) {
+            this.routes.set({ path, type: 'GET' }, handle);
+        }
+        post(path, handle) {
+            this.routes.set({ path, type: 'POST' }, handle);
+        }
+        async route(request) {
+            const url = parseurl_1.default(request);
+            if (url === undefined) {
+                throw new Error('can\'t pase this request path.');
+            }
+            if (url.pathname === null) {
+                throw new Error('can\'t find this request url.');
+            }
+            const _request = request;
+            for (const [{ path, type }, handle] of this.routes) {
+                const matchFunction = path_to_regexp_1.match(path);
+                const result = matchFunction(url.pathname);
+                if (result !== false && _request.method === type) {
+                    _request.params = result.params;
+                    let querys = null;
+                    if (typeof url.query === 'string') {
+                        querys = {};
+                        url.query.split('&').forEach((item) => {
+                            const [key, value] = item.split('=');
+                            querys && (querys[key] = value);
+                        });
+                    }
+                    else {
+                        querys = url.query;
+                    }
+                    _request.querys = querys;
+                    if (handle !== undefined) {
+                        return await Promise.resolve(handle(_request))
+                            .then(result => {
+                            if (result instanceof Response)
+                                return result;
+                            else {
+                                return new Response(JSON.stringify(result), this.responseInit);
+                            }
+                        });
+                    }
+                }
+            }
+            return null;
+        }
+    }
+    exports.default = Router;
+});
