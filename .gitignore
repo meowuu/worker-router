@@ -2,3 +2,6 @@ node_modules
 .vscode
 dist
 coverage
+yarn-error.log
+index
+index.d.ts
