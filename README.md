@@ -1,21 +1,22 @@
 # worker-router
 ![Node.js CI](https://github.com/meowuu/worker-router/workflows/Node.js%20CI/badge.svg?branch=master)
 [![codecov](https://codecov.io/gh/meowuu/worker-router/branch/master/graph/badge.svg)](https://codecov.io/gh/meowuu/worker-router)
+![npm version](https://badgen.net/npm/v/@meowuu/worker-router)
 
 worker-router is a light router util, recommend use in [Cloudflare Worker](https://workers.cloudflare.com/)
 
 # Install
 
 ``` bash
-npm install worker-router
+npm install @meowuu/worker-router
 # or use yarn
-yarn add worker-router
+yarn add @meowuu/worker-router
 ```
 
 # Usage
 
 ``` javascript
-import Router from 'worker-router'
+import Router from '@meowuu/worker-router'
 
 const router = new Router()
 
