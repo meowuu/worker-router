@@ -40,7 +40,7 @@ describe('test router', () => {
 
     router.get('/:name', func)
 
-    const req = { url: '/user1' } as any
+    const req = new Request('/user1')
     const res = await router.route(req)
     if (res !== null) {
       expect((await res.json()).name).toEqual('user1')
@@ -56,7 +56,7 @@ describe('test router', () => {
 
     router.get('/user', func)
 
-    const req = { url: '/user?filter=1&status=2' } as any
+    const req = new Request('/user?filter=1&status=2')
     const res = await router.route(req)
     if (res !== null) {
       expect((await res.json()).filter).toEqual('1')

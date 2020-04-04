@@ -17,7 +17,7 @@
     "watch": "tsc --watch",
     "build": "tsc",
     "eslint": "eslint src --ext .ts",
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "dependencies": {
     "@types/path-to-regexp": "^1.7.0",
