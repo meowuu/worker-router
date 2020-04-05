@@ -14,6 +14,7 @@ type Method = 'GET' | 'POST' | 'PUT' | 'HEAD' | 'DELETE' | 'CONNECT' | 'OPTIONS'
 
 export default class Router {
   routes = new Map<{ path: string, type: Method}, handleFunction>()
+  defaultRoutes: handleFunction[] = []
 
   get (path: string, handle: handleFunction) {
     this.routes.set({ path, type: 'GET' }, handle)
@@ -23,12 +24,26 @@ export default class Router {
     this.routes.set({ path, type: 'POST' }, handle)
   }
 
+  default (handle: handleFunction) {
+    this.defaultRoutes.push(handle)
+  }
+
   responseInit: ResponseInit
 
   constructor (headers: ResponseInit = {
     headers: { 'content-type': 'application/json' }
   }) {
     this.responseInit = headers
+  }
+
+  async callHandle (handle: any) {
+    return await Promise.resolve(handle)
+      .then(result => {
+        if (result instanceof Response) return result
+        else {
+          return new Response(JSON.stringify(result), this.responseInit)
+        }
+      })
   }
 
   async route (request: Request) {
@@ -43,7 +58,7 @@ export default class Router {
     const _request: RouterRequest = request
 
     for (const [{ path, type }, handle] of this.routes) {
-      const matchFunction = match(path)
+      const matchFunction = match(path, { decode: decodeURIComponent })
       const result = matchFunction(url.pathname)
       if (result !== false && _request.method === type) {
         _request.params = result.params
@@ -62,17 +77,20 @@ export default class Router {
 
         _request.querys = querys
         if (handle !== undefined) {
-          return await Promise.resolve(handle(_request))
-            .then(result => {
-              if (result instanceof Response) return result
-              else {
-                return new Response(JSON.stringify(result), this.responseInit)
-              }
-            })
+          return await this.callHandle(handle(_request))
         }
       }
     }
 
-    return new Response()
+    if (this.defaultRoutes.length === 0) {
+      return new Response()
+    } else {
+      let response = new Response()
+      for (const handle of this.defaultRoutes) {
+        response = await this.callHandle(handle(_request))
+      }
+
+      return response
+    }
   }
 }
