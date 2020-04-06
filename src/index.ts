@@ -63,7 +63,7 @@ export default class Router {
       if (result !== false && _request.method === type) {
         _request.params = result.params
 
-        let querys: { [x: string]: string | string[] } | null = null
+        let querys: { [x: string]: string | string[] } = {}
 
         if (typeof url.query === 'string') {
           querys = {}
@@ -72,7 +72,7 @@ export default class Router {
             querys && (querys[key] = value)
           })
         } else {
-          querys = url.query
+          querys = url.query || {}
         }
 
         _request.querys = querys
