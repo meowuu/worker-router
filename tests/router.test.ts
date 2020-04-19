@@ -116,4 +116,12 @@ describe('test router', () => {
     const text = await response.text()
     expect(text).toEqual('')
   })
+
+  it('test all handle', async () => {
+    const func = jest.fn(() => {})
+    router.all('/user', func)
+    await router.route(new Request('/user', { method: 'GET' }))
+    await router.route(new Request('/user', { method: 'POST' }))
+    expect(func).toBeCalledTimes(2)
+  })
 })

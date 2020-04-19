@@ -13,7 +13,7 @@ type RouterRequest = Request & {
 type Method = 'GET' | 'POST' | 'PUT' | 'HEAD' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH'
 
 export default class Router {
-  routes = new Map<{ path: string, type: Method}, handleFunction>()
+  routes = new Map<{ path: string, type: Method | 'ALL'}, handleFunction>()
   defaultRoutes: handleFunction[] = []
 
   get (path: string, handle: handleFunction) {
@@ -22,6 +22,10 @@ export default class Router {
 
   post (path: string, handle: handleFunction) {
     this.routes.set({ path, type: 'POST' }, handle)
+  }
+
+  all (path: string, handle: handleFunction) {
+    this.routes.set({ path, type: 'ALL' }, handle)
   }
 
   default (handle: handleFunction) {
@@ -60,7 +64,13 @@ export default class Router {
     for (const [{ path, type }, handle] of this.routes) {
       const matchFunction = match(path, { decode: decodeURIComponent })
       const result = matchFunction(url.pathname)
-      if (result !== false && _request.method === type) {
+      if (
+        result !== false &&
+        (
+          _request.method === type ||
+          type === 'ALL'
+        )
+      ) {
         _request.params = result.params
 
         let querys: { [x: string]: string | string[] } = {}
