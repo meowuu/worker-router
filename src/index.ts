@@ -73,7 +73,7 @@ export default class Router {
       ) {
         _request.params = result.params
 
-        let querys: { [x: string]: string | string[] } = {}
+        let querys: { [x: string]: string | string[] | undefined } = {}
 
         if (typeof url.query === 'string') {
           querys = {}
