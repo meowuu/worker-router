@@ -1,0 +1,8 @@
+{
+  "workbench.iconTheme": "theia-file-icons",
+  "workbench.colorTheme": "Noctis",
+  "editor.lineHeight": 30,
+  "editor.tabSize": 2,
+  "editor.renderWhitespace": "boundary",
+  "jest.pathToJest": "node_modules/.bin/jest"
+}
