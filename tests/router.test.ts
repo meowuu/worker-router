@@ -63,7 +63,7 @@ describe('test router', () => {
     }
   })
 
-  it('request error', async () => {
+  it('request error whit null', async () => {
     const func = jest.fn(() => {})
 
     router.get('/user', func)
@@ -75,7 +75,7 @@ describe('test router', () => {
     }
   })
 
-  it('request error', async () => {
+  it('request error with empty request', async () => {
     const func = jest.fn(() => {})
 
     router.get('/user', func)
@@ -123,5 +123,33 @@ describe('test router', () => {
     await router.route(new Request('/user', { method: 'GET' }))
     await router.route(new Request('/user', { method: 'POST' }))
     expect(func).toBeCalledTimes(2)
+  })
+
+  it('middleware intercept', async () => {
+    const auth = jest.fn(async () => {
+      return new Response("Intercept")
+    })
+    const handle = jest.fn(() => {})
+
+    router.use(auth)
+    router.all('/', () => {})
+    await router.route(new Request('/'))
+    expect(auth).toBeCalledTimes(1)
+    expect(handle).toBeCalledTimes(0)
+  })
+
+  it('middleware context', async () => {
+    const middleware1 = jest.fn(async (req, context) => {
+      context.name = '1'
+    })
+    const middleware2 = jest.fn(async (req, context) => {
+      expect(context.name).toEqual('1')
+    })
+    const handle = jest.fn(() => {})
+
+    router.use(middleware1)
+    router.use(middleware2)
+    router.all('/', () => {})
+    await router.route(new Request('/'))
   })
 })

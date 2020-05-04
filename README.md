@@ -29,5 +29,5 @@ const resp = await router.route(request)
 ```
 
 # Todos
-- [ ] middleware
+- [ ] middleware order
 - [ ] redirect

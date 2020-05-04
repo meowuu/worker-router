@@ -1,2 +1,7 @@
 tasks:
   - init: yarn install
+
+vscode:
+  extensions:
+    - Orta.vscode-jest@3.2.0:adbRMTNfxv/Rzc4SOP/c3g==
+    - liviuschera.noctis@10.29.1:9li6UDhn574pZ/dwrYdPww==

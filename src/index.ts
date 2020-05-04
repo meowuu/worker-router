@@ -3,7 +3,7 @@ import { match } from 'path-to-regexp'
 
 type handleResult = any | Response
 
-type handleFunction = (request: RouterRequest) => (handleResult | Promise<handleResult>)
+type handleFunction = (request: RouterRequest, context?: any) => (handleResult | Promise<handleResult>)
 
 type RouterRequest = Request & {
   params?: any
@@ -12,9 +12,16 @@ type RouterRequest = Request & {
 
 type Method = 'GET' | 'POST' | 'PUT' | 'HEAD' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH'
 
+type middlewareFunction = (req: Request, context: any) => Promise<void | Response>
+
 export default class Router {
   routes = new Map<{ path: string, type: Method | 'ALL'}, handleFunction>()
   defaultRoutes: handleFunction[] = []
+  middlewares: middlewareFunction[] = []
+
+  use(auth: middlewareFunction) {
+    this.middlewares = this.middlewares.concat(auth)
+  }
 
   get (path: string, handle: handleFunction) {
     this.routes.set({ path, type: 'GET' }, handle)
@@ -50,6 +57,15 @@ export default class Router {
       })
   }
 
+  async invokeMiddleware (middlewares: middlewareFunction[], req: Request, context: any) {
+    for (const middle of middlewares) {
+      const result = await middle(req, context)
+      if (result instanceof Response) {
+        return result
+      }
+    }
+  }
+
   async route (request: Request) {
     const url = parseUrl(request as any)
     if (url === undefined) {
@@ -60,6 +76,10 @@ export default class Router {
     }
 
     const _request: RouterRequest = request
+    const _response = new Response()
+    const context = {}
+    const result = await this.invokeMiddleware(this.middlewares, _request, context)
+    if (result instanceof Response) return result
 
     for (const [{ path, type }, handle] of this.routes) {
       const matchFunction = match(path, { decode: decodeURIComponent })
@@ -87,17 +107,17 @@ export default class Router {
 
         _request.querys = querys
         if (handle !== undefined) {
-          return await this.callHandle(handle(_request))
+          return await this.callHandle(handle(_request, context))
         }
       }
     }
 
     if (this.defaultRoutes.length === 0) {
-      return new Response()
+      return _response
     } else {
-      let response = new Response()
+      let response = _response
       for (const handle of this.defaultRoutes) {
-        response = await this.callHandle(handle(_request))
+        response = await this.callHandle(handle(_request, context))
       }
 
       return response
